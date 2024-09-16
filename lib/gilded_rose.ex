@@ -61,6 +61,10 @@ defmodule GildedRose do
     item |> reset_quality_to_zero() |> decrease_sell_in()
   end
 
+  def update_item_quality(%Item{name: "Conjured Mana Cake"} = item) do
+    item |> decrease_quality(2) |> decrease_sell_in()
+  end
+
   def update_item_quality(%Item{quality: @min_item_quality} = item) do
     decrease_sell_in(item)
   end

@@ -65,14 +65,12 @@ defmodule GildedRoseTest do
     assert [%GildedRose.Item{sell_in: -1, quality: 0} | _] = GildedRose.items(agent)
   end
 
-  @tag :skip
   test "assert conjured items degrade in quality twice as fast over time" do
     agent = get_agent([GildedRose.Item.new("Conjured Mana Cake", 10, 10)])
     assert :ok == GildedRose.update_quality(agent)
     assert [%GildedRose.Item{sell_in: 9, quality: 8} | _] = GildedRose.items(agent)
   end
 
-  @tag :skip
   test "assert conjured items never degrade below 0 if sell in < 0" do
     agent = get_agent([GildedRose.Item.new("Conjured Mana Cake", 0, 1)])
     assert :ok == GildedRose.update_quality(agent)
