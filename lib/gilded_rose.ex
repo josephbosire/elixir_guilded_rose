@@ -1,4 +1,16 @@
 defmodule GildedRose do
+  @moduledoc """
+  GildedRose is a module that simulates an inventory management system for various items in a store.
+
+  It uses an Agent to manage the state of the inventory, storing a list of items. The items' quality and sell-by dates are updated daily according to specific rules based on the type of item.
+
+  The key functionality includes:
+    - Initializing the inventory with predefined items (`new/0`).
+    - Retrieving the list of items (`items/1`).
+    - Updating the quality of all items (`update_quality/1`).
+
+  Special items like "Aged Brie", "Sulfuras", "Backstage passes", and "Conjured Mana Cake" have custom behavior for how their quality changes.
+  """
   use Agent
   alias GildedRose.Item
 
