@@ -53,14 +53,12 @@ defmodule GildedRoseTest do
     assert [%GildedRose.Item{sell_in: 10, quality: 80} | _] = GildedRose.items(agent)
   end
 
-  @tag :skip
   test "assert back stage passes increase in quality while sell in > 0" do
     agent = get_agent([GildedRose.Item.new("Backstage passes to a TAFKAL80ETC concert", 3, 40)])
     assert :ok == GildedRose.update_quality(agent)
     assert [%GildedRose.Item{sell_in: 2, quality: 41} | _] = GildedRose.items(agent)
   end
 
-  @tag :skip
   test "assert back stage passes quality is set to 0 when sell in date passes" do
     agent = get_agent([GildedRose.Item.new("Backstage passes to a TAFKAL80ETC concert", 0, 40)])
     assert :ok == GildedRose.update_quality(agent)

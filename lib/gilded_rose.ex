@@ -42,6 +42,25 @@ defmodule GildedRose do
     |> decrease_sell_in()
   end
 
+  def update_item_quality(
+        %Item{
+          name: "Backstage passes to a TAFKAL80ETC concert",
+          sell_in: sell_in,
+          quality: quality
+        } = item
+      )
+      when quality < 50 and sell_in > 0 do
+    item |> increase_quality() |> decrease_sell_in()
+  end
+
+  def update_item_quality(
+        %Item{
+          name: "Backstage passes to a TAFKAL80ETC concert"
+        } = item
+      ) do
+    item |> reset_quality_to_zero() |> decrease_sell_in()
+  end
+
   def update_item_quality(%Item{quality: @min_item_quality} = item) do
     decrease_sell_in(item)
   end
@@ -69,6 +88,10 @@ defmodule GildedRose do
   end
 
   defp increase_quality(item), do: item
+
+  defp reset_quality_to_zero(%Item{} = item) do
+    %{item | quality: 0}
+  end
 
   defp decrease_sell_in(%Item{sell_in: sell_in} = item) do
     %{item | sell_in: sell_in - 1}
