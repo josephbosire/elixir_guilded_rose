@@ -2,6 +2,9 @@ defmodule GildedRose do
   use Agent
   alias GildedRose.Item
 
+  @max_item_quality 50
+  @min_item_quality 0
+
   def new() do
     {:ok, agent} =
       Agent.start_link(fn ->
@@ -23,116 +26,51 @@ defmodule GildedRose do
   def update_quality(agent) do
     for i <- 0..(Agent.get(agent, &length/1) - 1) do
       item = Agent.get(agent, &Enum.at(&1, i))
-
-      item =
-        cond do
-          item.name != "Aged Brie" && item.name != "Backstage passes to a TAFKAL80ETC concert" ->
-            if item.quality > 0 do
-              if item.name != "Sulfuras, Hand of Ragnaros" do
-                %{item | quality: item.quality - 1}
-              else
-                item
-              end
-            else
-              item
-            end
-
-          true ->
-            cond do
-              item.quality < 50 ->
-                item = %{item | quality: item.quality + 1}
-
-                cond do
-                  item.name == "Backstage passes to a TAFKAL80ETC concert" ->
-                    item =
-                      cond do
-                        item.sell_in < 11 ->
-                          cond do
-                            item.quality < 50 ->
-                              %{item | quality: item.quality + 1}
-
-                            true ->
-                              item
-                          end
-
-                        true ->
-                          item
-                      end
-
-                    cond do
-                      item.sell_in < 6 ->
-                        cond do
-                          item.quality < 50 ->
-                            %{item | quality: item.quality + 1}
-
-                          true ->
-                            item
-                        end
-
-                      true ->
-                        item
-                    end
-
-                  true ->
-                    item
-                end
-
-              true ->
-                item
-            end
-        end
-
-      item =
-        cond do
-          item.name != "Sulfuras, Hand of Ragnaros" ->
-            %{item | sell_in: item.sell_in - 1}
-
-          true ->
-            item
-        end
-
-      item =
-        cond do
-          item.sell_in < 0 ->
-            cond do
-              item.name != "Aged Brie" ->
-                cond do
-                  item.name != "Backstage passes to a TAFKAL80ETC concert" ->
-                    cond do
-                      item.quality > 0 ->
-                        cond do
-                          item.name != "Sulfuras, Hand of Ragnaros" ->
-                            %{item | quality: item.quality - 1}
-
-                          true ->
-                            item
-                        end
-
-                      true ->
-                        item
-                    end
-
-                  true ->
-                    %{item | quality: item.quality - item.quality}
-                end
-
-              true ->
-                cond do
-                  item.quality < 50 ->
-                    %{item | quality: item.quality + 1}
-
-                  true ->
-                    item
-                end
-            end
-
-          true ->
-            item
-        end
-
+      item = update_item_quality(item)
       Agent.update(agent, &List.replace_at(&1, i, item))
     end
 
     :ok
+  end
+
+  @spec update_item_quality(%Item{}) :: %Item{}
+  def update_item_quality(%Item{name: "Sulfuras, Hand of Ragnaros"} = item), do: item
+
+  def update_item_quality(%Item{name: "Aged Brie"} = item) do
+    item
+    |> increase_quality()
+    |> decrease_sell_in()
+  end
+
+  def update_item_quality(%Item{quality: @min_item_quality} = item) do
+    decrease_sell_in(item)
+  end
+
+  def update_item_quality(%Item{quality: @max_item_quality} = item) do
+    decrease_sell_in(item)
+  end
+
+  def update_item_quality(%Item{sell_in: sell_in} = item) when sell_in > 0 do
+    item |> decrease_quality() |> decrease_sell_in()
+  end
+
+  def update_item_quality(%Item{sell_in: sell_in} = item) when sell_in <= 0 do
+    item |> decrease_quality(2) |> decrease_sell_in()
+  end
+
+  defp decrease_quality(item, decrease_by \\ 1) do
+    quality = item.quality
+    updated_quality = max(quality - decrease_by, 0)
+    %{item | quality: updated_quality}
+  end
+
+  defp increase_quality(%Item{quality: quality} = item) when quality < @max_item_quality do
+    %{item | quality: quality + 1}
+  end
+
+  defp increase_quality(item), do: item
+
+  defp decrease_sell_in(%Item{sell_in: sell_in} = item) do
+    %{item | sell_in: sell_in - 1}
   end
 end
